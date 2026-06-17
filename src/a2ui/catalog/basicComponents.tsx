@@ -708,7 +708,7 @@ const FoodItemWrapper: React.FC<{ foodProps: any }> = ({ foodProps }) => {
       <div style={detailsStyle}>
         <p style={nameStyle}>{foodProps.name}</p>
         <p style={calStyle}>{foodProps.calories}</p>
-        {qtyStyle && <p style={qtyStyle}>{foodProps.quantity}</p>}
+        {foodProps.quantity && <p style={qtyStyle}>{foodProps.quantity}</p>}
       </div>
     </div>
   );
