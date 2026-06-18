@@ -17,6 +17,7 @@ export function App() {
   const [queryInput, setQueryInput] = useState('');
   const [loadingAgent, setLoadingAgent] = useState(false);
   const [agentError, setAgentError] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   // 1. Create the MessageProcessor with interactive simulator hooks
   const processor = useMemo(() => {
@@ -124,6 +125,7 @@ export function App() {
 
   // 3. Parse JSON from editor and feed update commands to engine
   useEffect(() => {
+    if (isStreaming) return; // Skip sync during streaming to avoid conflicts
     try {
       const parsed = JSON.parse(jsonText);
       setIsValidJson(true);
@@ -137,7 +139,7 @@ export function App() {
       setIsValidJson(false);
       setJsonError(err.message || 'JSON Syntax Error');
     }
-  }, [jsonText, processor]);
+  }, [jsonText, processor, isStreaming]);
 
   // 4. Track dynamic data model changes on the main surface
   const mainSurface = surfaces[0];
@@ -158,10 +160,16 @@ export function App() {
     if (!queryInput.trim()) return;
     setLoadingAgent(true);
     setAgentError(null);
+    setIsStreaming(true);
 
     const requestTimestamp = new Date().toLocaleTimeString();
     const requestLog = `[Chat Request] Sent query to FoodAI server: "${queryInput}"`;
     setLogs((prev) => [{ time: requestTimestamp, message: requestLog }, ...prev]);
+
+    // Clear previous surface state before streaming
+    processor.reset();
+    setSurfaces([]);
+    setJsonText('[\n');
 
     try {
       const res = await fetch('http://localhost:5001/api/generate', {
@@ -173,15 +181,78 @@ export function App() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `HTTP error ${res.status}`);
+        const errorText = await res.text();
+        let errorMsg = `HTTP error ${res.status}`;
+        try {
+          const parsedErr = JSON.parse(errorText);
+          errorMsg = parsedErr.error || parsedErr.details || errorMsg;
+        } catch (_) {}
+        throw new Error(errorMsg);
       }
 
-      const data = await res.json();
-      setJsonText(JSON.stringify(data, null, 2));
+      const reader = res.body?.getReader();
+      if (!reader) {
+        throw new Error('Readable stream not supported or missing from response.');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let done = false;
+      let firstMessage = true;
+      const receivedMessages: any[] = [];
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+
+        if (value) {
+          const textChunk = decoder.decode(value, { stream: true });
+          buffer += textChunk;
+
+          // Split buffer by newlines to get individual JSON lines
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+
+            try {
+              const parsedMsg = JSON.parse(trimmed);
+              receivedMessages.push(parsedMsg);
+
+              // 1. Process message immediately on the surface engine
+              processor.processMessage(parsedMsg);
+              // 2. Refresh surfaces list in React to trigger updates
+              setSurfaces(processor.getSurfaces());
+
+              // 3. Append to textarea text format visually
+              setJsonText((prev) => {
+                const cleanPrev = prev.trim() === '[\n' ? '[\n' : prev;
+                const formattedMsg = JSON.stringify(parsedMsg, null, 2)
+                  .split('\n')
+                  .map(l => '  ' + l)
+                  .join('\n');
+                
+                if (firstMessage) {
+                  firstMessage = false;
+                  return '[\n' + formattedMsg;
+                } else {
+                  return cleanPrev + ',\n' + formattedMsg;
+                }
+              });
+            } catch (err) {
+              console.error('Failed to parse streaming line:', trimmed, err);
+            }
+          }
+        }
+      }
+
+      // Close the JSON array in textarea
+      setJsonText((prev) => prev + '\n]');
 
       const responseTimestamp = new Date().toLocaleTimeString();
-      const responseLog = `[Chat Response] Received A2UI stream with ${data.length} messages. Payload size: ${JSON.stringify(data).length} bytes.`;
+      const responseLog = `[Chat Response] Completed streaming with ${receivedMessages.length} messages.`;
       setLogs((prev) => [{ time: responseTimestamp, message: responseLog }, ...prev]);
     } catch (err: any) {
       console.error(err);
@@ -193,6 +264,7 @@ export function App() {
       setLogs((prev) => [{ time: errorTimestamp, message: errorLog }, ...prev]);
     } finally {
       setLoadingAgent(false);
+      setIsStreaming(false);
     }
   };
 
