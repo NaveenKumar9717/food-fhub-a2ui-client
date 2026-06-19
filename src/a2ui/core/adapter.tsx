@@ -42,7 +42,6 @@ export function createComponentImplementation<PropsType = any>(
 
     // Instantiate or re-create binder if context/componentId changes
     if (!binderRef.current) {
-      console.log(`[adapter ReactWrapper] Initializing GenericBinder for componentId="${context.componentId}"`);
       binderRef.current = new GenericBinder(
         context.surface,
         context.processor,
@@ -53,7 +52,6 @@ export function createComponentImplementation<PropsType = any>(
       binderRef.current.componentId !== context.componentId ||
       binderRef.current.surface !== context.surface
     ) {
-      console.log(`[adapter ReactWrapper] Re-creating GenericBinder for componentId: "${binderRef.current.componentId}" -> "${context.componentId}"`);
       binderRef.current.dispose();
       binderRef.current = new GenericBinder(
         context.surface,
@@ -67,9 +65,7 @@ export function createComponentImplementation<PropsType = any>(
 
     // Trigger re-resolve if binder dependency elements or surface components change
     useEffect(() => {
-      console.log(`[adapter ReactWrapper] useEffect mounting for componentId="${context.componentId}". Registering component updates subscription.`);
       const unsub = context.surface.subscribeComponents(() => {
-        console.log(`[adapter ReactWrapper] component subscription triggered: componentId="${context.componentId}" re-resolving.`);
         binder.resolve();
         setTick(t => t + 1);
       });
@@ -78,7 +74,6 @@ export function createComponentImplementation<PropsType = any>(
       setTick(t => t + 1);
       
       return () => {
-        console.log(`[adapter ReactWrapper] useEffect cleanup for componentId="${context.componentId}". Unsubscribing components list updates.`);
         unsub();
       };
     }, [context.surface, context.componentId, binder]);
@@ -86,7 +81,6 @@ export function createComponentImplementation<PropsType = any>(
     // Clean up binder subscriptions on unmount
     useEffect(() => {
       return () => {
-        console.log(`[adapter ReactWrapper] Cleaning up / disposing GenericBinder for componentId="${context.componentId}"`);
         binder.dispose();
       };
     }, [binder]);

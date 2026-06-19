@@ -91,7 +91,6 @@ export class MessageProcessor {
    */
   public processMessages(messages: any[]) {
     if (!Array.isArray(messages)) {
-      console.warn('Expected array of messages, got:', messages);
       return;
     }
 
@@ -106,11 +105,8 @@ export class MessageProcessor {
   public processMessage(msg: any) {
     if (!msg || typeof msg !== 'object') return;
 
-    console.log('[MessageProcessor] Processing message:', JSON.stringify(msg));
-
     if (msg.createSurface) {
       const { surfaceId, catalogId } = msg.createSurface;
-      console.log(`[MessageProcessor] createSurface surfaceId="${surfaceId}" catalogId="${catalogId}"`);
       if (!this.surfaces.has(surfaceId)) {
         const newSurface = new Surface(surfaceId, catalogId);
         this.surfaces.set(surfaceId, newSurface);
@@ -121,22 +117,16 @@ export class MessageProcessor {
     if (msg.updateComponents) {
       const { surfaceId, components } = msg.updateComponents;
       const surface = this.surfaces.get(surfaceId);
-      console.log(`[MessageProcessor] updateComponents surfaceId="${surfaceId}", count=${components?.length || 0}`);
       if (surface && Array.isArray(components)) {
         surface.updateComponents(components);
-      } else {
-        console.warn('[MessageProcessor] updateComponents ignored - surface not found or invalid components');
       }
     }
 
     if (msg.updateDataModel) {
       const { surfaceId, path, value } = msg.updateDataModel;
       const surface = this.surfaces.get(surfaceId);
-      console.log(`[MessageProcessor] updateDataModel surfaceId="${surfaceId}" path="${path}" value=`, JSON.stringify(value));
       if (surface && path !== undefined && value !== undefined) {
         surface.dataModel.set(path, value);
-      } else {
-        console.warn('[MessageProcessor] updateDataModel ignored - surface not found or invalid path/value');
       }
     }
   }

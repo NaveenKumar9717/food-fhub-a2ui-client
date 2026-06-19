@@ -169,17 +169,14 @@ export function App() {
 
     const requestTimestamp = new Date().toLocaleTimeString();
     const requestLog = `[Chat Request] Sent query to FoodAI server: "${queryInput}"`;
-    console.log('[Client App] Query input:', queryInput);
     setLogs((prev) => [{ time: requestTimestamp, message: requestLog }, ...prev]);
 
     // Clear previous surface state before streaming
-    console.log('[Client App] Resetting message processor surfaces.');
     processor.reset();
     setSurfaces([]);
     setJsonText('[\n');
 
     try {
-      console.log('[Client App] Sending POST request to http://localhost:5001/api/generate');
       const res = await fetch('http://localhost:5001/api/generate', {
         method: 'POST',
         headers: {
@@ -188,7 +185,6 @@ export function App() {
         body: JSON.stringify({ text: queryInput }),
       });
 
-      console.log('[Client App] Received response status:', res.status);
       if (!res.ok) {
         const errorText = await res.text();
         let errorMsg = `HTTP error ${res.status}`;
@@ -196,7 +192,6 @@ export function App() {
           const parsedErr = JSON.parse(errorText);
           errorMsg = parsedErr.error || parsedErr.details || errorMsg;
         } catch (_) {}
-        console.error('[Client App] Request failed:', errorMsg);
         throw new Error(errorMsg);
       }
 
@@ -209,9 +204,6 @@ export function App() {
       let buffer = '';
       let done = false;
       const receivedMessages: any[] = [];
-      let sseMsgCount = 0;
-
-      console.log('[Client App] Starting stream reader loop.');
 
       while (!done) {
         const { value, done: readerDone } = await reader.read();
@@ -219,7 +211,6 @@ export function App() {
 
         if (value) {
           const textChunk = decoder.decode(value, { stream: true });
-          console.log(`[Client App] Read chunk of size ${textChunk.length} characters.`);
           buffer += textChunk;
 
           // Split buffer by double newlines (\n\n) to isolate individual SSE messages
@@ -236,13 +227,11 @@ export function App() {
               if (!dataText) continue;
 
               try {
-                sseMsgCount++;
-                console.log(`[Client App] SSE Msg #${sseMsgCount} Payload text:`, dataText);
                 const parsedMsg = JSON.parse(dataText);
+                console.log('JSON Received:\n' + JSON.stringify(parsedMsg, null, 2));
                 receivedMessages.push(parsedMsg);
 
                 // 1. Process message immediately on the surface engine
-                console.log(`[Client App] Processing SSE Msg #${sseMsgCount} through MessageProcessor...`);
                 processor.processMessage(parsedMsg);
                 // 2. Refresh surfaces list in React to trigger updates
                 setSurfaces(processor.getSurfaces());
@@ -262,18 +251,13 @@ export function App() {
               } catch (err) {
                 console.error('[Client App] Failed to parse SSE message:', dataText, err);
               }
-            } else {
-              console.log('[Client App] Non-data block encountered in SSE stream:', trimmed);
             }
           }
         }
       }
 
-      console.log('[Client App] Stream read finished. Closing JSON text.');
-
       const responseTimestamp = new Date().toLocaleTimeString();
       const responseLog = `[Chat Response] Completed streaming with ${receivedMessages.length} messages.`;
-      console.log('[Client App] Stream reading fully complete.');
       setLogs((prev) => [{ time: responseTimestamp, message: responseLog }, ...prev]);
     } catch (err: any) {
       console.error('[Client App] Error in handleSendToAgent stream parsing:', err);
