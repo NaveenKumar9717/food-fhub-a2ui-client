@@ -69,7 +69,10 @@ export class DataModel {
    */
   private notify(changedPath: string): void {
     const normChanged = this.normalizePath(changedPath);
-    for (const listener of this.listeners) {
+    // Clone the listeners to an array before iterating to avoid infinite recursion
+    // if callbacks add or remove subscriptions.
+    const activeListeners = Array.from(this.listeners);
+    for (const listener of activeListeners) {
       // Trigger if listener path is a parent of changed path,
       // or changed path is a parent of listener path.
       if (

@@ -45,6 +45,8 @@ export class GenericBinder {
       return;
     }
 
+    console.log(`[GenericBinder] Resolving props for componentId="${this.componentId}" (type="${component.component}")`);
+
     const resolved: Record<string, any> = {};
 
     // Get all keys from the component definition excluding system ones
@@ -62,6 +64,7 @@ export class GenericBinder {
     this.evaluateValidation(component, resolved);
 
     this.props = resolved;
+    console.log(`[GenericBinder] Props resolved for "${this.componentId}":`, JSON.stringify(resolved));
   }
 
   /**
@@ -74,6 +77,7 @@ export class GenericBinder {
 
       // Subscribe to changes on this path
       const unsub = this.surface.dataModel.subscribe(bindingPath, () => {
+        console.log(`[GenericBinder] Path update detected: componentId="${this.componentId}" path="${bindingPath}"`);
         this.resolve();
         this.onChange();
       });
@@ -82,11 +86,13 @@ export class GenericBinder {
       // Add two-way binding setter: set[Key] (e.g. setValue)
       const setterName = 'set' + key.charAt(0).toUpperCase() + key.slice(1);
       resolvedObj[setterName] = (newVal: any) => {
+        console.log(`[GenericBinder] Two-way setter called: componentId="${this.componentId}" key="${key}" path="${bindingPath}" newVal=`, JSON.stringify(newVal));
         this.surface.dataModel.set(bindingPath, newVal);
       };
 
-      // Return resolved value
-      return this.surface.dataModel.get(bindingPath);
+      const resolvedVal = this.surface.dataModel.get(bindingPath);
+      console.log(`[GenericBinder] Resolved path binding: componentId="${this.componentId}" key="${key}" path="${bindingPath}" ->`, JSON.stringify(resolvedVal));
+      return resolvedVal;
     }
 
     // 2. Is it an action binding? e.g. { name: "submit", context: { userId: "/id" } }
@@ -109,6 +115,7 @@ export class GenericBinder {
         // Merge runtime context arguments with the resolved context
         const finalContext = { ...resolvedContext, ...runtimeContext };
         
+        console.log(`[GenericBinder] Action triggered: componentId="${this.componentId}" name="${actionBinding.name}" context=`, JSON.stringify(finalContext));
         // Dispatch the action payload
         this.processor.dispatchAction(actionBinding.name, finalContext);
       };

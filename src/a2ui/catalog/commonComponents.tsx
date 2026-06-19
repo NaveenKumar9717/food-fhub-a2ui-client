@@ -428,6 +428,12 @@ export const Carousel = createComponentImplementation('Carousel', {}, ({ props, 
     onSelect(emblaApi);
 
     emblaApi.on('reinit' as any, onInit).on('reinit' as any, onSelect).on('select', onSelect);
+
+    return () => {
+      emblaApi.off('reinit' as any, onInit);
+      emblaApi.off('reinit' as any, onSelect);
+      emblaApi.off('select', onSelect);
+    };
   }, [emblaApi, onInit, onSelect]);
 
   const onPrevButtonClick = React.useCallback(() => {
