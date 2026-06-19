@@ -3,6 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import { createComponentImplementation } from '../core/adapter';
+import { LOCAL_ICONS_MAP } from './iconsMap';
 
 // Initialize markdown-it and DOMPurify
 const md = new MarkdownIt({ html: true, linkify: true, breaks: true });
@@ -160,7 +161,8 @@ export const Image = createComponentImplementation('Image', {}, ({ props }) => {
 });
 
 export const Icon = createComponentImplementation('Icon', {}, ({ props }) => {
-  const isPath = typeof props.name === 'object' && props.name !== null && 'svgPath' in props.name;
+  const name = props.name;
+  const isPath = typeof name === 'object' && name !== null && 'svgPath' in name;
   
   const style: React.CSSProperties = {
     display: 'inline-flex',
@@ -169,26 +171,38 @@ export const Icon = createComponentImplementation('Icon', {}, ({ props }) => {
     fontSize: props.size !== undefined ? `${props.size}px` : 'var(--a2ui-font-size-xl, 24px)',
     width: props.size !== undefined ? `${props.size}px` : 'auto',
     height: props.size !== undefined ? `${props.size}px` : 'auto',
+    color: props.color || 'inherit',
   };
 
   if (isPath) {
     return (
       <svg viewBox="0 0 24 24" style={{ ...style, fill: 'currentColor' }}>
-        <path d={props.name.svgPath} />
+        <path d={(name as any).svgPath} />
       </svg>
     );
   }
 
-  // Material Symbol camelCase mapping (e.g. shoppingCart -> shopping_cart)
-  const iconName = typeof props.name === 'string'
-    ? props.name.replace(/[A-Z]/g, (letter: string) => '_' + letter.toLowerCase())
-    : '';
+  if (typeof name === 'string') {
+    // 1. Look up react-icons map
+    const ReactIcon = LOCAL_ICONS_MAP[name] || LOCAL_ICONS_MAP[name.replace(/[A-Z]/g, (letter: string) => '_' + letter.toLowerCase())];
+    if (ReactIcon) {
+      return (
+        <span style={style} className="a2ui-local-icon">
+          <ReactIcon size={props.size || 24} />
+        </span>
+      );
+    }
 
-  return (
-    <span className="material-symbols-outlined" style={style}>
-      {iconName}
-    </span>
-  );
+    // 2. Fallback to Google Material Symbols
+    const iconName = name.replace(/[A-Z]/g, (letter: string) => '_' + letter.toLowerCase());
+    return (
+      <span className="material-symbols-outlined" style={style}>
+        {iconName}
+      </span>
+    );
+  }
+
+  return null;
 });
 
 // --- Interactive Components ---
