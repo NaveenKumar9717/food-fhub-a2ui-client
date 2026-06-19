@@ -214,40 +214,46 @@ export function App() {
           const textChunk = decoder.decode(value, { stream: true });
           buffer += textChunk;
 
-          // Split buffer by newlines to get individual JSON lines
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+          // Split buffer by double newlines (\n\n) to isolate individual SSE messages
+          const blocks = buffer.split('\n\n');
+          buffer = blocks.pop() || '';
 
-          for (const line of lines) {
-            const trimmed = line.trim();
+          for (const block of blocks) {
+            const trimmed = block.trim();
             if (!trimmed) continue;
 
-            try {
-              const parsedMsg = JSON.parse(trimmed);
-              receivedMessages.push(parsedMsg);
+            // SSE format starts each message event with 'data: '
+            if (trimmed.startsWith('data: ')) {
+              const dataText = trimmed.substring(6).trim();
+              if (!dataText) continue;
 
-              // 1. Process message immediately on the surface engine
-              processor.processMessage(parsedMsg);
-              // 2. Refresh surfaces list in React to trigger updates
-              setSurfaces(processor.getSurfaces());
+              try {
+                const parsedMsg = JSON.parse(dataText);
+                receivedMessages.push(parsedMsg);
 
-              // 3. Append to textarea text format visually
-              setJsonText((prev) => {
-                const cleanPrev = prev.trim() === '[\n' ? '[\n' : prev;
-                const formattedMsg = JSON.stringify(parsedMsg, null, 2)
-                  .split('\n')
-                  .map(l => '  ' + l)
-                  .join('\n');
-                
-                if (firstMessage) {
-                  firstMessage = false;
-                  return '[\n' + formattedMsg;
-                } else {
-                  return cleanPrev + ',\n' + formattedMsg;
-                }
-              });
-            } catch (err) {
-              console.error('Failed to parse streaming line:', trimmed, err);
+                // 1. Process message immediately on the surface engine
+                processor.processMessage(parsedMsg);
+                // 2. Refresh surfaces list in React to trigger updates
+                setSurfaces(processor.getSurfaces());
+
+                // 3. Append to textarea text format visually
+                setJsonText((prev) => {
+                  const cleanPrev = prev.trim() === '[\n' ? '[\n' : prev;
+                  const formattedMsg = JSON.stringify(parsedMsg, null, 2)
+                    .split('\n')
+                    .map(l => '  ' + l)
+                    .join('\n');
+                  
+                  if (firstMessage) {
+                    firstMessage = false;
+                    return '[\n' + formattedMsg;
+                  } else {
+                    return cleanPrev + ',\n' + formattedMsg;
+                  }
+                });
+              } catch (err) {
+                console.error('Failed to parse streaming SSE event:', dataText, err);
+              }
             }
           }
         }
