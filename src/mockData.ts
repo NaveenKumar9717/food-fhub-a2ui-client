@@ -826,6 +826,81 @@ export const mockTemplates: MockTemplate[] = [
       },
     ],
   },
+  {
+    name: "Finance News Dashboard",
+    description: "Renders finance-related articles in a clean categorized list with action triggers.",
+    messages: [
+      {
+        version: "v0.9",
+        createSurface: { surfaceId: "main-surface", catalogId: "basic" }
+      },
+      {
+        version: "v0.9",
+        updateComponents: {
+          surfaceId: "main-surface",
+          components: [
+            {
+              id: "root",
+              component: "Column",
+              children: ["finance-news-card"],
+              gap: 16
+            },
+            {
+              id: "finance-news-card",
+              component: "NewsCard",
+              category: "Finance",
+              items: [
+                {
+                  sourceName: "BusinessLine",
+                  sourceLogo: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=32&h=32&q=80",
+                  title: "Stock Market Highlights, June 19: Sensex settled 607.08 pts, dragged 154.90 pts",
+                  image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=150&q=80",
+                  timeAgo: "9 hours ago",
+                  author: "Badri Narayanan",
+                  action: {
+                    name: "open_article",
+                    context: {
+                      source: "BusinessLine",
+                      title: "Stock Market Highlights, June 19: Sensex settled 607.08 pts, dragged 154.90 pts"
+                    }
+                  }
+                },
+                {
+                  sourceName: "Mint",
+                  sourceLogo: "https://images.unsplash.com/photo-1614680376593-902f74fa0d41?auto=format&fit=crop&w=32&h=32&q=80",
+                  title: "Bandhan Bank hikes FCNR deposit rates up to 7.1% for maturities of 3-5 years after...",
+                  image: "https://images.unsplash.com/photo-1541354329998-f437a2f3d9a1?auto=format&fit=crop&w=150&q=80",
+                  timeAgo: "5 hours ago",
+                  action: {
+                    name: "open_article",
+                    context: {
+                      source: "Mint",
+                      title: "Bandhan Bank hikes FCNR deposit rates up to 7.1% for maturities of 3-5 years after..."
+                    }
+                  }
+                },
+                {
+                  sourceName: "FXStreet",
+                  sourceLogo: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=32&h=32&q=80",
+                  title: "Japanese Yen pares losses as US Dollar momentum fades despite hawkish Fed stance",
+                  image: "https://images.unsplash.com/photo-1618042164219-62c820f10723?auto=format&fit=crop&w=150&q=80",
+                  timeAgo: "3 hours ago",
+                  author: "Agustin Wazne",
+                  action: {
+                    name: "open_article",
+                    context: {
+                      source: "FXStreet",
+                      title: "Japanese Yen pares losses as US Dollar momentum fades despite hawkish Fed stance"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
 ];
 export const defaultMockJson = JSON.stringify(
   mockTemplates[0].messages,

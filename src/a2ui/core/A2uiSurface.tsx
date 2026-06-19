@@ -22,6 +22,37 @@ export const SkeletonLoader: React.FC<{ id: string }> = ({ id }) => {
     );
   }
 
+  if (normalizedId.includes('news')) {
+    return (
+      <div className="skeleton-container skeleton-news" style={{ flexDirection: 'column', gap: '16px' }}>
+        <div className="skeleton-line skeleton-title" style={{ width: '40%', height: '16px' }} />
+        <div className="skeleton-news-items" style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton-news-item" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              paddingTop: i > 1 ? '16px' : '0px',
+              borderTop: i > 1 ? '1px solid #242c3d' : 'none'
+            }}>
+              <div className="skeleton-news-source" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div className="skeleton-circle-tiny" style={{ width: '16px', height: '16px', borderRadius: '4px' }} />
+                <div className="skeleton-line-tiny" style={{ width: '60px', height: '8px' }} />
+              </div>
+              <div className="skeleton-news-content" style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                <div className="skeleton-lines" style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                  <div className="skeleton-line" style={{ width: '90%', height: '10px' }} />
+                  <div className="skeleton-line" style={{ width: '70%', height: '10px' }} />
+                </div>
+                <div className="skeleton-square-small" style={{ width: '72px', height: '54px', borderRadius: '8px' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (normalizedId.includes('grid') || normalizedId.includes('shelf')) {
     return (
       <div className="skeleton-container skeleton-grid">

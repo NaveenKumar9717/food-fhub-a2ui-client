@@ -111,6 +111,11 @@ export function App() {
         const actionLog = `[Purchase Action] Initiating purchase on ${action.context.store.toUpperCase()} for recipe ingredients: ${JSON.stringify(action.context.ingredients)}`;
         setLogs((prev) => [{ time: actionTimestamp, message: actionLog }, ...prev]);
         alert(`Successfully initiated purchase on ${action.context.store} for recipe: "${action.context.recipe}"!`);
+      } else if (action.name === 'open_article') {
+        const actionTimestamp = new Date().toLocaleTimeString();
+        const actionLog = `[News Action] Opening article "${action.context.title}" from source "${action.context.source}"`;
+        setLogs((prev) => [{ time: actionTimestamp, message: actionLog }, ...prev]);
+        alert(`Opening article: "${action.context.title}"`);
       }
     });
   }, []);
