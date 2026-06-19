@@ -1,0 +1,30 @@
+{
+	"name": "embla-carousel-loop-react",
+	"version": "1.0.0",
+	"description": "Embla Carousel Loop React Example",
+	"main": "src/js/index.tsx",
+	"scripts": {
+		"start": "react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test --env=jsdom",
+		"eject": "react-scripts eject"
+	},
+	"dependencies": {
+		"react": "19.2.3",
+		"react-dom": "19.2.3",
+		"react-scripts": "4.0.0",
+		"embla-carousel-react": "9.0.0-rc02",
+		"embla-carousel": "9.0.0-rc02"
+	},
+	"devDependencies": {
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"typescript": "^5"
+	},
+	"browserslist": [
+		">0.2%",
+		"not dead",
+		"not ie <= 11",
+		"not op_mini all"
+	]
+}
