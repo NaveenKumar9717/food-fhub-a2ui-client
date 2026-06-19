@@ -53,6 +53,28 @@ export const SkeletonLoader: React.FC<{ id: string }> = ({ id }) => {
     );
   }
 
+  if (normalizedId.includes('carousel')) {
+    return (
+      <div className="skeleton-container skeleton-carousel" style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'transparent', border: 'none', padding: 0 }}>
+        <div className="skeleton-carousel-viewport" style={{ display: 'flex', gap: '12px', overflow: 'hidden', width: '100%' }}>
+          <div className="skeleton-card" style={{ flex: '0 0 85%', height: '220px', borderRadius: '16px' }} />
+          <div className="skeleton-card" style={{ flex: '0 0 85%', height: '220px', borderRadius: '16px' }} />
+        </div>
+        <div className="skeleton-carousel-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+          <div className="skeleton-buttons" style={{ display: 'flex', gap: '8px' }}>
+            <div className="skeleton-circle-small" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+            <div className="skeleton-circle-small" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+          </div>
+          <div className="skeleton-dots" style={{ display: 'flex', gap: '6px' }}>
+            <div className="skeleton-circle-tiny" style={{ width: '8px', height: '8px', borderRadius: '50%' }} />
+            <div className="skeleton-circle-tiny" style={{ width: '8px', height: '8px', borderRadius: '50%' }} />
+            <div className="skeleton-circle-tiny" style={{ width: '8px', height: '8px', borderRadius: '50%' }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (normalizedId.includes('grid') || normalizedId.includes('shelf')) {
     return (
       <div className="skeleton-container skeleton-grid">

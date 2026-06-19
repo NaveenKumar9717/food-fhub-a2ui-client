@@ -543,4 +543,103 @@ body {
   height: 80px;
 }
 
+/* Embla Carousel Styles */
+.embla {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  --slide-spacing: 12px;
+  --slide-size: 85%;
+}
+
+.embla__viewport {
+  overflow: hidden;
+  width: 100%;
+  border-radius: 16px;
+}
+
+.embla__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+  margin-left: calc(var(--slide-spacing) * -1);
+}
+
+.embla__slide {
+  transform: translate3d(0, 0, 0);
+  flex: 0 0 var(--slide-size);
+  min-width: 0;
+  padding-left: var(--slide-spacing);
+  box-sizing: border-box;
+}
+
+.embla__controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+
+.embla__buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.embla__button {
+  background-color: #121620;
+  border: 1px solid #242c3d;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  padding: 0;
+}
+
+.embla__button:hover:not(:disabled) {
+  background-color: #191f2d;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.embla__button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.embla__button .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.embla__dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.embla__dot {
+  background-color: #242c3d;
+  border: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.embla__dot--selected {
+  background-color: #3b82f6;
+  width: 20px;
+  border-radius: 4px;
+}
+
+
 

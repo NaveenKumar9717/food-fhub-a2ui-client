@@ -1,6 +1,7 @@
 import React from 'react';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
+import useEmblaCarousel from 'embla-carousel-react';
 import { createComponentImplementation } from '../core/adapter';
 import { Catalog } from '../core/A2uiSurface';
 
@@ -1138,6 +1139,100 @@ export const NewsCard = createComponentImplementation('NewsCard', {}, ({ props }
   );
 });
 
+export const Carousel = createComponentImplementation('Carousel', {}, ({ props, buildChild }) => {
+  const children = props.children || [];
+  const options = { loop: true, align: 'start', ...props.options };
+  const [emblaRef, emblaApi] = useEmblaCarousel(options);
+
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [scrollSnaps, setScrollSnaps] = React.useState<number[]>([]);
+  const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
+  const [nextBtnDisabled, setNextBtnDisabled] = React.useState(true);
+
+  const onInit = React.useCallback((api: any) => {
+    setScrollSnaps(api.scrollSnapList());
+  }, []);
+
+  const onSelect = React.useCallback((api: any) => {
+    setSelectedIndex(api.selectedScrollSnap());
+    setPrevBtnDisabled(!api.canScrollPrev());
+    setNextBtnDisabled(!api.canScrollNext());
+  }, []);
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+
+    onInit(emblaApi);
+    onSelect(emblaApi);
+
+    emblaApi.on('reinit' as any, onInit).on('reinit' as any, onSelect).on('select', onSelect);
+  }, [emblaApi, onInit, onSelect]);
+
+  const onPrevButtonClick = React.useCallback(() => {
+    if (!emblaApi) return;
+    emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const onNextButtonClick = React.useCallback(() => {
+    if (!emblaApi) return;
+    emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const onDotButtonClick = React.useCallback(
+    (index: number) => {
+      if (!emblaApi) return;
+      emblaApi.scrollTo(index);
+    },
+    [emblaApi]
+  );
+
+  return (
+    <div className="embla">
+      <div className="embla__viewport" ref={emblaRef}>
+        <div className="embla__container">
+          {children.map((childId: string, idx: number) => (
+            <div className="embla__slide" key={childId || idx}>
+              {buildChild(childId)}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="embla__controls">
+        <div className="embla__buttons">
+          <button
+            className={`embla__button embla__button--prev ${prevBtnDisabled ? 'embla__button--disabled' : ''}`}
+            onClick={onPrevButtonClick}
+            disabled={prevBtnDisabled}
+            type="button"
+          >
+            <span className="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button
+            className={`embla__button embla__button--next ${nextBtnDisabled ? 'embla__button--disabled' : ''}`}
+            onClick={onNextButtonClick}
+            disabled={nextBtnDisabled}
+            type="button"
+          >
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+
+        <div className="embla__dots">
+          {scrollSnaps.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => onDotButtonClick(index)}
+              className={`embla__dot ${index === selectedIndex ? 'embla__dot--selected' : ''}`}
+              type="button"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 // Define and assemble the basic components catalog
 export const basicCatalog: Catalog = {
   components: new Map([
@@ -1157,5 +1252,6 @@ export const basicCatalog: Catalog = {
     ['RefrigeratorGrid', RefrigeratorGrid],
     ['RecipeItem', RecipeItem],
     ['NewsCard', NewsCard],
+    ['Carousel', Carousel],
   ]),
 };
